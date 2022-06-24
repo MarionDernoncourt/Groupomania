@@ -39,7 +39,7 @@ exports.addComment = async (req, res) => {
     .save()
     .then(() => {
       DB.Comments.findAll({ where: { id_article: articleId } })
-        .then(() => res.status(200).json({ message: "Comment added !" }))
+        .then(() => res.status(200).json({ message: "Comment added !", comment }))
         .catch((err) => res.status(500).json(err));
     })
     .catch((err) => res.status(500).json({ err }));

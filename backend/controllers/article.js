@@ -6,7 +6,7 @@ const DB = require("../db.config");
 /*** Routage de la ressource article */
 // Lire tous les articles
 exports.getAllArticles = (req, res) => {
-  DB.Article.findAll()
+  DB.Article.findAll({ include: User }) // extraire donnée user
     .then((articles) => res.json({ data: articles }))
     .catch((err) => res.status(500).json({ err }));
 };
@@ -35,17 +35,19 @@ exports.getOneArticle = (req, res) => {
 
 // //Ajouter un article
 exports.addArticle = (req, res) => {
+  const articleObject = JSON.parse(req.body.article);
   // Verification données cohérentes
-  const { title, content } = req.body;
-  if (!title | !content) {
+  if (!articleObject.title | !articleObject.content) {
     return res.status(400).json({ message: "Missing data" });
   }
   // Création de l'article
+
   const article = new DB.Article({
-    ...req.body,
+    ...articleObject,
     user_id: req.user.id,
     image: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
   });
+
   // Sauvegarde de l'article
   article
     .save()
@@ -53,7 +55,7 @@ exports.addArticle = (req, res) => {
     .catch((err) => res.status(500).json({ err }));
 };
 
-// // Modifier un article
+/// // Modifier un article
 exports.updateArticle = async (req, res) => {
   /// Vérification si id présent et cohérent
   const articleID = req.params.id;
@@ -61,6 +63,24 @@ exports.updateArticle = async (req, res) => {
     res.status(400).json({ message: "Missing parameter" });
   }
   try {
+    const articleObject = req.file
+      ? {
+          // si une image est modifiée => transforme en objet js exploitable
+          ...JSON.parse(req.body.article),
+          image: `${req.protocol}://${req.get("host")}/images/${
+            req.file.filename
+          }`,
+        }
+      : { ...JSON.parse(req.body.article) }; //sans image a modifier
+
+    // if (articleObject == req.file) {
+    //   const filename = article.image.split("/images/")[1];
+    //   fs.unlink(`images/${filename}`, (err) => {
+    //     if (err) throw err;
+    //     console.log("successfully deleted /tmp/hello");
+    //   });
+    // }
+
     //Recherche de l'article et vérification
     let article = await DB.Article.findOne({ where: { id: articleID } });
     if (article === null) {
@@ -68,21 +88,24 @@ exports.updateArticle = async (req, res) => {
         .status(404)
         .json({ message: "This article does not exists !" });
     }
-    // Modification de l'article
+    // Modification de l'article si user connecté est celui qui a écrit l'article ou l'admin (user 7)
     let userConnected = req.user.id;
-    if (article.user_id === userConnected) {
-      await DB.Article.update(req.body, { where: { id: articleID } });
-      return res.json({ message: "Article updated" });
+    console.log(process.env.ADMIN_USER, userConnected)
+    if (
+      article.user_id === userConnected ||
+      userConnected == process.env.ADMIN_USER
+    ) {
+      await DB.Article.update(articleObject, { where: { id: articleID } });
+      return res.json({ message: "Article updated", articleObject });
     } else {
       return res
         .status(400)
         .json({ message: "You can't modify this article !" });
     }
-  } catch {
-    return res.status(500).json({ message: "Database Error", error: err });
+  } catch (err) {
+    return res.status(500).json({ message: "Database Error" + err });
   }
 };
-
 // // Supprimer un article
 exports.deleteArticle = async (req, res) => {
   // Vérification si id est cohérent
@@ -90,14 +113,17 @@ exports.deleteArticle = async (req, res) => {
   if (articleId === null) {
     return res.status(400).json({ message: "Missing parameter" });
   }
-  // Recherche de l'article à supprimer 
+  // Recherche de l'article à supprimer
   let article = await DB.Article.findOne({ where: { id: articleId } });
   // Recherche si article existe
   if (article === null) {
     return res.status(404).json({ message: "This article does not exists !" });
   }
-// Suppression de l'article si user connecté est celui qui a écrit l'article
-  if (article.user_id === req.user.id) {
+  // Suppression de l'article si user connecté est celui qui a écrit l'article ou l'admin (user 7)
+  if (
+    article.user_id === req.user.id ||
+    req.user.id == process.env.ADMIN_USER
+  ) {
     const filename = article.image.split("/images/")[1];
     fs.unlink(`images/${filename}`, () => {
       DB.Article.destroy({ where: { id: articleId } })

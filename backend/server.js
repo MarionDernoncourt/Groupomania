@@ -19,7 +19,7 @@ const commentRouter = require("./routes/comments");
 
 /****** Mise en place du routage */
 
-app.use("images", express.static(path.join(__dirname, "images")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use("/api", user_router);
 app.use("/api", article_router);

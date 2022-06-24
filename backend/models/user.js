@@ -16,6 +16,11 @@ module.exports = (sequelize) => {
       defaultValue: "",
       allowNull: false,
     },
+    prenom: {
+      type: DataTypes.STRING(100),
+      defaultValue:"",
+      allowNull: false
+    },
     pseudo: {
       type: DataTypes.STRING(100),
       allowNull: false,

@@ -19,9 +19,9 @@ db.User = require("./models/user")(sequelize);
 db.Article = require("./models/article")(sequelize);
 db.Comments = require("./models/comments")(sequelize);
 
-db.User.hasMany(db.Article, { foreignKey: "user_id", onDelete : "cascade" });
+db.User.hasMany(db.Article, { foreignKey: "user_id", onDelete : "cascade", onUpdate: "cascade" });
 db.Article.belongsTo(db.User, { foreignKey: "user_id" });
-db.Article.hasMany(db.Comments, { foreignKey: "id_article", onDelete: "cascade" });
+db.Article.hasMany(db.Comments, { foreignKey: "id_article", onDelete: "cascade", onUpdate: "cascade" });
 db.Comments.belongsTo(db.Article, { foreignKey: "id_article"});
 
 

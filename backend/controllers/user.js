@@ -3,21 +3,19 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const DB = require("../db.config");
-const user = require("../models/user");
+// const user = require("../models/user");
 
-// Créate
+// Create
 exports.signup = async (req, res) => {
-  const { nom, pseudo, email, password } = req.body;
+  const { nom, prenom, pseudo, email, password } = req.body;
 
   // Validation des données reçues
-  if (!nom || !pseudo || !email || !password) {
+  if (!nom || !prenom || !pseudo || !email || !password) {
     return res.status(400).json({ message: "Missing data !" });
   }
-
   try {
     // Vérification si User n'existe pas
     const user = await DB.User.findOne({ where: { email: email } });
-
     if (user != null) {
       return res
         .status(409)
@@ -33,6 +31,7 @@ exports.signup = async (req, res) => {
     // Création du nouvel User
     let newUser = await DB.User.create({
       nom: req.body.nom,
+      prenom: req.body.prenom,
       pseudo: req.body.pseudo,
       email: req.body.email,
       password: hash,
@@ -89,6 +88,7 @@ exports.loggin = async (req, res) => {
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_DURATION,
     });
+
     return res.json({ userId: user.id, token: token });
   } catch (err) {
     return res.status(500).json({ err });
@@ -109,12 +109,14 @@ exports.updateUser = async (req, res) => {
   if (user === null) {
     return res.status(404).json({ message: "This user does not exists" });
   }
-// Vérification de l'identité de l'utilisateur
-  if (user.id !== req.user.id) {
-    return res.json({ message: "You can not update this profile !" });
+  // Vérification de l'identité de l'utilisateur
+  if (user.id !== req.user.id && req.user.id != process.env.ADMIN_USER) {
+    return res
+      .status(403)
+      .json({ message: "You can not update this profile !" });
   }
   // Mise à jour du User
-  await User.update(req.body, { where: { id: userId } });
+  await DB.User.update(req.body, { where: { id: userId } });
   return res.json({ message: "User Updated" });
 };
 
@@ -128,7 +130,7 @@ exports.deleteUser = async (req, res) => {
   // Recherche de l'utilisateur
   let user = await DB.User.findOne({ where: { id: userId } });
   // Vérification de l'identité de l'utilisateur
-  if (user.id !== req.user.id) {
+  if (user.id !== req.user.id && req.user.id != process.env.ADMIN_USER) {
     return res.json({ message: "You can not delete this profile !" });
   }
   // Suppression de l'utilisateur
