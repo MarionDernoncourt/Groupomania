@@ -26,6 +26,7 @@ export default {
 </script>
 
 <style>
+
 .public_contain {
     width: 100%;
     display: flex;

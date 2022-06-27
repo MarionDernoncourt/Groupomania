@@ -30,7 +30,7 @@
                     <label for="user_confirm">Confirmer le mot de passe</label>
                     <input type="password" id="user_confirm" v-model="confirme" />
                 </div>
-                <div>
+                <div class="submit_container">
                     <button type="submit" class="button">Créer votre compte</button>
                 </div>
             </form>
@@ -75,6 +75,8 @@ export default {
     flex-direction: column;
     align-items: center;
     padding: 10px;
+    height: 100%;
+    justify-content: center;
 }
 
 .form_signup {
@@ -89,7 +91,12 @@ export default {
     font-family: "Nunito";
     color: #003368;
 }
-
+.form_signup h2 {
+    text-align: center;
+}
+.submit_container {
+    padding: 20px;
+}
 @media screen and (max-width: 720px) {
     .signup_formGroup {
         display: flex;

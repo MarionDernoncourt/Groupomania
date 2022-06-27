@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <img src="@/assets/icon-left-font-monochrome-white.png" alt="logo" id="logo" />
+    <a href="/home" ><img src="@/assets/icon-left-font-monochrome-white.png" alt="logo" id="logo" /></a>
   </div>
 </template>
 

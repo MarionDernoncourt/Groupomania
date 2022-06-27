@@ -15,5 +15,5 @@ export function adminGuard(to) {
   if(userId === "7") { //si user admin (7) ok
     return true;
   }
-  router.push("/home") // sinon renvoie page d'accueil
+  router.push("/") // sinon renvoie page d'accueil
 }

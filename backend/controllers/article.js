@@ -73,14 +73,7 @@ exports.updateArticle = async (req, res) => {
         }
       : { ...JSON.parse(req.body.article) }; //sans image a modifier
 
-    // if (articleObject == req.file) {
-    //   const filename = article.image.split("/images/")[1];
-    //   fs.unlink(`images/${filename}`, (err) => {
-    //     if (err) throw err;
-    //     console.log("successfully deleted /tmp/hello");
-    //   });
-    // }
-
+      
     //Recherche de l'article et vérification
     let article = await DB.Article.findOne({ where: { id: articleID } });
     if (article === null) {
@@ -88,9 +81,19 @@ exports.updateArticle = async (req, res) => {
         .status(404)
         .json({ message: "This article does not exists !" });
     }
+
+    // suppression de l'image si image est modifiée
+    if (req.file) {
+      const filename = article.image.split("/images/")[1];
+      fs.unlink(`images/${filename}`, (err) => {
+        if (err) throw err;
+        console.log("successfully deleted /tmp/hello");
+      });
+    }
+
     // Modification de l'article si user connecté est celui qui a écrit l'article ou l'admin (user 7)
     let userConnected = req.user.id;
-    console.log(process.env.ADMIN_USER, userConnected)
+    console.log(process.env.ADMIN_USER, userConnected);
     if (
       article.user_id === userConnected ||
       userConnected == process.env.ADMIN_USER
