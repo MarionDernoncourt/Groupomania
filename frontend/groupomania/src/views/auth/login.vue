@@ -47,6 +47,7 @@ export default {
             accountService.login(this.user)
                 .then(res => {
                     accountService.saveToken(res.data.token)
+                    accountService.saveRefreshToken(res.data.refreshToken)
                     accountService.saveId(res.data.userId)
                     this.$router.push("/home")
                 })

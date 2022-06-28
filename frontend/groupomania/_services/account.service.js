@@ -8,15 +8,23 @@ let login = (credentials) => {
 let logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("userId");
+  localStorage.removeItem("refreshToken")
 };
 
 let getToken = () => {
   return localStorage.getItem("token");
 };
+let getRefreshToken = (refreshToken) => {
+  return Axios.post("/auth/refreshToken", refreshToken)
+}
+
 let saveToken = (token) => {
   localStorage.setItem("token", token);
 };
 
+let saveRefreshToken = (refreshToken) => {
+  localStorage.setItem("refreshToken", refreshToken)
+}
 let saveId = (id) => {
   localStorage.setItem("userId", id);
 };
@@ -30,7 +38,9 @@ export const accountService = {
   login,
   logout,
   getToken,
+  getRefreshToken,
   saveToken,
+  saveRefreshToken,
   isLogged,
   saveId,
 };

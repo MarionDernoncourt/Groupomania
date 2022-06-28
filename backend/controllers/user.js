@@ -86,10 +86,19 @@ exports.loggin = async (req, res) => {
     }
     // Génération du token
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_DURATION,
+      expiresIn: process.env.JWT_DURATION 
     });
 
-    return res.json({ userId: user.id, token: token });
+    // Génération du refresh token
+    const refreshToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "3h",
+    });
+
+    return res.json({
+      userId: user.id,
+      token: token,
+      refreshToken: refreshToken,
+    });
   } catch (err) {
     return res.status(500).json({ err });
   }
@@ -137,4 +146,25 @@ exports.deleteUser = async (req, res) => {
   await DB.User.destroy({ where: { id: userId } })
     .then(() => res.status(200).json({ message: "User deleted" }))
     .catch((err) => res.status(500).json({ message: "Error delete", err }));
+};
+
+exports.refreshToken = (req, res) => {
+  let refreshToken = req.body.refreshToken;
+  let decodedToken = jwt.verify(refreshToken, process.env.JWT_SECRET);
+  let userId = decodedToken.userId;
+  let tokenCreation = decodedToken.iat;
+  let tokenExpiration = decodedToken.exp;
+  let newDate = new Date().getTime() / 1000;
+
+  if (newDate <= tokenExpiration && newDate >= tokenCreation) {
+    const token = jwt.sign({ userId: userId }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_DURATION,
+    });
+    return res.json({
+      token: token,
+      refreshToken: req.body.refreshToken,
+    });
+  } else {
+    return res.status(401).json({ message: "token expired", err });
+  }
 };

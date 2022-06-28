@@ -13,5 +13,7 @@ router.get("/auth/user/:id", auth, userCtrl.getUser); // récupération one user
 router.post("/auth/login", userCtrl.loggin); // connexion au compte user
 router.patch("/auth/user/:id", auth, userCtrl.updateUser); // modification user
 router.delete("/auth/user/:id", auth, userCtrl.deleteUser); // suppression user
+ 
+router.post("/auth/refreshToken", userCtrl.refreshToken) // Vérification refresh Token + génération nouveau token si ok
 
 module.exports = router;

@@ -22,8 +22,17 @@ Axios.interceptors.response.use(
   },
   (error) => {
     if (error.response.status === 401) {
-      accountService.logout();
-      router.push("/");
+      // accountService.logout();
+      // router.push("/");
+      let refreshToken = { refreshToken: localStorage.getItem("refreshToken") };
+      accountService.getRefreshToken(refreshToken)
+        .then((res) => {
+          accountService.saveToken(res.data.token);
+          accountService.saveRefreshToken(res.data.refreshToken);
+        })
+        .catch((err) => console.log(err));
+      // .then() // reçoit mon nouveau token -- save
+      // .catch()
     }
   }
 );
